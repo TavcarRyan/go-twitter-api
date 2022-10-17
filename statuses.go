@@ -3,6 +3,7 @@ package twitter
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dghubble/sling"
@@ -107,9 +108,10 @@ type StatusService struct {
 
 // newStatusService returns a new StatusService.
 func newStatusService(sling *sling.Sling) *StatusService {
-	return &StatusService{
-		sling: sling.Path("statuses/"),
-	}
+	// return &StatusService{
+	// 	sling: sling.Path("statuses/"),
+	// }
+	return &StatusService{sling: sling}
 }
 
 // StatusShowParams are the parameters for StatusService.Show
@@ -159,7 +161,7 @@ func (s *StatusService) Lookup(ids []int64, params *StatusLookupParams) ([]Tweet
 
 // StatusUpdateParams are the parameters for StatusService.Update
 type StatusUpdateParams struct {
-	Status                    string   `url:"status,omitempty"`
+	Text                    string   	`url:"text,omitempty"`
 	InReplyToStatusID         int64    `url:"in_reply_to_status_id,omitempty"`
 	AutoPopulateReplyMetadata *bool    `url:"auto_populate_reply_metadata,omitempty"`
 	ExcludeReplyUserIds       []int64  `url:"exclude_reply_user_ids,comma,omitempty"`
@@ -183,10 +185,15 @@ func (s *StatusService) Update(status string, params *StatusUpdateParams) (*Twee
 	if params == nil {
 		params = &StatusUpdateParams{}
 	}
-	params.Status = status
+	params.Text = status
+
 	tweet := new(Tweet)
 	apiError := new(APIError)
-	resp, err := s.sling.New().Post("update.json").BodyForm(params).Receive(tweet, apiError)
+
+	bearer := fmt.Sprintf("Bearer %s", os.Getenv("TWITTER_BEARER_TOKEN"))
+
+	resp, err := s.sling.New().Add("Authorization", bearer).Add("content-type", "application/json").Post("tweets").BodyJSON(params).Receive(tweet, apiError)
+
 	return tweet, resp, relevantError(err, *apiError)
 }
 

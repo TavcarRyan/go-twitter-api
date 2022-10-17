@@ -6,7 +6,7 @@ import (
 	"github.com/dghubble/sling"
 )
 
-const twitterAPI = "https://api.twitter.com/1.1/"
+const twitterAPI = "https://api.twitter.com/2/"
 
 // Client is a Twitter client for making Twitter API requests.
 type Client struct {
@@ -30,9 +30,29 @@ type Client struct {
 	Users          *UserService
 }
 
+type StatusUpdateParam struct {
+	Text                    string   	`url:"text,omitempty"`
+	InReplyToStatusID         int64    `url:"in_reply_to_status_id,omitempty"`
+	AutoPopulateReplyMetadata *bool    `url:"auto_populate_reply_metadata,omitempty"`
+	ExcludeReplyUserIds       []int64  `url:"exclude_reply_user_ids,comma,omitempty"`
+	AttachmentURL             string   `url:"attachment_url,omitempty"`
+	MediaIds                  []int64  `url:"media_ids,omitempty,comma"`
+	PossiblySensitive         *bool    `url:"possibly_sensitive,omitempty"`
+	Lat                       *float64 `url:"lat,omitempty"`
+	Long                      *float64 `url:"long,omitempty"`
+	PlaceID                   string   `url:"place_id,omitempty"`
+	DisplayCoordinates        *bool    `url:"display_coordinates,omitempty"`
+	TrimUser                  *bool    `url:"trim_user,omitempty"`
+	CardURI                   string   `url:"card_uri,omitempty"`
+	// Deprecated
+	TweetMode string `url:"tweet_mode,omitempty"`
+}
+
+
 // NewClient returns a new Client.
 func NewClient(httpClient *http.Client) *Client {
 	base := sling.New().Client(httpClient).Base(twitterAPI)
+
 	return &Client{
 		sling:          base,
 		Accounts:       newAccountService(base.New()),
